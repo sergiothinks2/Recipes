@@ -11,7 +11,7 @@ struct RecipeListView: View {
     @StateObject private var viewModel = RecipeListViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.recipes.isEmpty {
                     ProgressView()
@@ -36,7 +36,6 @@ struct RecipeListView: View {
             }
         }
         .task {
-            // Load initial data
             await viewModel.fetchRecipes()
         }
     }
@@ -47,39 +46,39 @@ struct RecipeRowView: View {
     let recipe: Recipe
 
     var body: some View {
-        HStack {
-            // Recipe image
-            AsyncImage(url: URL(string: recipe.photoURLSmall ?? "")) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    Image(systemName: "photo")
+        NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+            HStack {
+                AsyncImage(url: URL(string: recipe.photoURLSmall ?? "")) {
+                    phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .failure:
+                        Image(systemName: "photo")
+                            .foregroundColor(.gray)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(recipe.name)
+                        .font(.headline)
+                    Text(recipe.cuisine)
+                        .font(.subheadline)
                         .foregroundColor(.gray)
-                @unknown default:
-                    EmptyView()
                 }
             }
-            .frame(width: 60, height: 60)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-
-            // Recipe details
-            VStack(alignment: .leading, spacing: 4) {
-                Text(recipe.name)
-                    .font(.headline)
-                Text(recipe.cuisine)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-            }
+            .padding(.vertical, 4)
         }
-        .padding(.vertical, 4)
     }
 }
-
 struct RecipeListView_Previews: PreviewProvider {
     static var previews: some View {
         RecipeListView()
