@@ -11,6 +11,7 @@ import WebKit
 
 struct RecipeDetailView: View {
     let recipe: Recipe
+    @State private var isLoading = true
 
     var body: some View {
         ScrollView {
@@ -26,8 +27,24 @@ struct RecipeDetailView: View {
                     if let sourceURL = recipe.sourceURL,
                         let url = URL(string: sourceURL)
                     {
-                        WebView(url: url)
-                            .frame(height: 400)
+                        ZStack {
+                            WebView(url: url, isLoading: $isLoading)
+                                .frame(minHeight: 600, maxHeight: 800)
+
+                            if isLoading {
+                                VStack {
+                                    ProgressView()
+                                        .scaleEffect(1.5)
+                                    Text("Loading recipe...")
+                                        .foregroundColor(.secondary)
+                                        .padding(.top)
+                                }
+                                .frame(
+                                    maxWidth: .infinity, maxHeight: .infinity
+                                )
+                                .background(Color(.systemBackground))
+                            }
+                        }
                     } else {
                         // Unavailable content view
                         VStack(spacing: 16) {
@@ -84,12 +101,38 @@ struct RecipeDetailView: View {
 // WebView using UIKit's WKWebView
 struct WebView: UIViewRepresentable {
     let url: URL
+    @Binding var isLoading: Bool
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
         webView.load(URLRequest(url: url))
         return webView
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {}
+
+    class Coordinator: NSObject, WKNavigationDelegate {
+        var parent: WebView
+
+        init(_ parent: WebView) {
+            self.parent = parent
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
+        {
+            parent.isLoading = false
+        }
+
+        func webView(
+            _ webView: WKWebView, didFail navigation: WKNavigation!,
+            withError error: Error
+        ) {
+            parent.isLoading = false
+        }
+    }
 }
