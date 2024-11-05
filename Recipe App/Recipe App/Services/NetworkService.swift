@@ -60,22 +60,21 @@ final class NetworkService: NetworkServiceProtocol {
 }
 
 // MARK: - Mock Network Service for Testing/Preview
-// TODO: come back to fix this
-//#if DEBUG
-//class MockNetworkService: NetworkServiceProtocol {
-//    var mockRecipes: [Recipe]
-//    var shouldFail = false
-//
-//    init(mockRecipes: [Recipe] = Recipe.sampleRecipes, shouldFail: Bool = false) {
-//        self.mockRecipes = mockRecipes
-//        self.shouldFail = shouldFail
-//    }
-//
-//    func fetchRecipes() async throws -> [Recipe] {
-//        if shouldFail {
-//            throw NetworkError.serverError(NSError(domain: "Mock", code: -1))
-//        }
-//        return mockRecipes
-//    }
-//}
-//#endif
+#if DEBUG
+class MockNetworkService: NetworkServiceProtocol {
+    var mockRecipes: [Recipe]
+    var shouldFail = false
+
+    init(mockRecipes: [Recipe] = Recipe.sampleRecipes, shouldFail: Bool = false) {
+        self.mockRecipes = mockRecipes
+        self.shouldFail = shouldFail
+    }
+
+    func fetchRecipes() async throws -> [Recipe] {
+        if shouldFail {
+            throw NetworkError.serverError(NSError(domain: "Mock", code: -1))
+        }
+        return mockRecipes
+    }
+}
+#endif

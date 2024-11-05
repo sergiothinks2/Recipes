@@ -31,3 +31,59 @@ struct Recipe: Codable, Identifiable {
 struct RecipesResponse: Codable {
     let recipes: [Recipe]
 }
+
+extension Recipe {
+    static let sampleRecipes: [Recipe] = [
+        Recipe(
+            id: "1",
+            name: "Spaghetti Carbonara",
+            cuisine: "Italian",
+            photoURLSmall: "https://example.com/carbonara-small.jpg",
+            photoURLLarge: "https://example.com/carbonara-large.jpg",
+            sourceURL: "https://example.com/carbonara-recipe",
+            youtubeURL: "https://youtube.com/watch?v=carbonara"
+        ),
+        Recipe(
+            id: "2",
+            name: "Sushi Roll",
+            cuisine: "Japanese",
+            photoURLSmall: "https://example.com/sushi-small.jpg",
+            photoURLLarge: "https://example.com/sushi-large.jpg",
+            sourceURL: "https://example.com/sushi-recipe",
+            youtubeURL: "https://youtube.com/watch?v=sushi"
+        ),
+        Recipe(
+            id: "3",
+            name: "Tacos al Pastor",
+            cuisine: "Mexican",
+            photoURLSmall: "https://example.com/tacos-small.jpg",
+            photoURLLarge: "https://example.com/tacos-large.jpg",
+            sourceURL: "https://example.com/tacos-recipe",
+            youtubeURL: "https://youtube.com/watch?v=tacos"
+        ),
+    ]
+}
+
+#if DEBUG
+    extension Recipe {
+        static func mockRecipe(
+            id: String = "test-id",
+            name: String = "Test Recipe",
+            cuisine: String = "Test Cuisine",
+            photoURLSmall: String? = nil,
+            photoURLLarge: String? = nil,
+            sourceURL: String? = nil,
+            youtubeURL: String? = nil
+        ) -> Recipe {
+            Recipe(
+                id: id,
+                name: name,
+                cuisine: cuisine,
+                photoURLSmall: photoURLSmall,
+                photoURLLarge: photoURLLarge,
+                sourceURL: sourceURL,
+                youtubeURL: youtubeURL
+            )
+        }
+    }
+#endif
