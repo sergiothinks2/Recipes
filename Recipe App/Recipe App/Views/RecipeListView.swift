@@ -12,31 +12,110 @@ struct RecipeListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            ZStack {
                 if viewModel.isLoading && viewModel.recipes.isEmpty {
-                    ProgressView()
+                    ProgressView("Loading recipes...")
+                } else if viewModel.isEmpty {
+                    EmptyStateView(
+                        title: "No Recipes Available",
+                        message: "Check back later for delicious recipes!",
+                        systemImage: "fork.knife.circle"
+                    )
+                } else if viewModel.error != nil {
+                    ErrorStateView(
+                        error: viewModel.error?.localizedDescription
+                            ?? "Unknown error",
+                        retryAction: {
+                            Task {
+                                await viewModel.fetchRecipes(forceRefresh: true)
+                            }
+                        }
+                    )
                 } else {
-                    List(viewModel.recipes) { recipe in
-                        RecipeRowView(recipe: recipe)
-                    }
-                    .refreshable {
-                        await viewModel.fetchRecipes(forceRefresh: true)
-                    }
+                    RecipeListContent(
+                        recipes: viewModel.recipes,
+                        onRefresh: {
+                            await viewModel.fetchRecipes(forceRefresh: true)
+                        }
+                    )
                 }
             }
             .navigationTitle("Recipes")
-            .alert("Error", isPresented: .constant(viewModel.error != nil)) {
-                Button("Retry") {
-                    Task {
-                        await viewModel.fetchRecipes(forceRefresh: true)
-                    }
-                }
-            } message: {
-                Text(viewModel.error?.localizedDescription ?? "")
-            }
         }
         .task {
             await viewModel.fetchRecipes()
+        }
+    }
+}
+
+// Split out the list content for cleaner organization
+struct RecipeListContent: View {
+    let recipes: [Recipe]
+    let onRefresh: () async -> Void
+
+    var body: some View {
+        List(recipes) { recipe in
+            RecipeRowView(recipe: recipe)
+        }
+        .refreshable {
+            await onRefresh()
+        }
+    }
+}
+// Reusable empty state view
+struct EmptyStateView: View {
+    let title: String
+    let message: String
+    let systemImage: String
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: systemImage)
+                .font(.system(size: 60))
+                .foregroundColor(.gray)
+
+            Text(title)
+                .font(.title2)
+                .fontWeight(.medium)
+
+            Text(message)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+    }
+}
+
+// Reusable error state view
+struct ErrorStateView: View {
+    let error: String
+    let retryAction: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 60))
+                .foregroundColor(.orange)
+
+            Text("Unable to Load Recipes")
+                .font(.title2)
+                .fontWeight(.medium)
+
+            Text(error)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Button(action: retryAction) {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Try Again")
+                }
+                .font(.headline)
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
 }

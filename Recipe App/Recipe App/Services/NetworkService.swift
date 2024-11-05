@@ -8,12 +8,27 @@
 import Foundation
 
 // MARK: - NetworkError
-enum NetworkError: Error {
+enum NetworkError: LocalizedError {
     case invalidURL
     case invalidResponse
     case httpError(Int)
     case decodingError(Error)
     case serverError(Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .invalidResponse:
+            return "Invalid response from server"
+        case .httpError(let code):
+            return "Server error (Code: \(code))"
+        case .decodingError(_):
+            return "Unable to load recipes. Please try again later."
+        case .serverError(_):
+            return "Unable to connect to server. Please check your internet connection."
+        }
+    }
 }
 
 // MARK: - NetworkService Protocol
