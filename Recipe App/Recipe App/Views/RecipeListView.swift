@@ -48,7 +48,7 @@ struct RecipeRowView: View {
     var body: some View {
         NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
             HStack {
-                AsyncImage(url: URL(string: recipe.photoURLSmall ?? "")) {
+                CachedAsyncImage(url: URL(string: recipe.photoURLSmall ?? "")) {
                     phase in
                     switch phase {
                     case .empty:
@@ -79,6 +79,7 @@ struct RecipeRowView: View {
         }
     }
 }
+
 struct RecipeListView_Previews: PreviewProvider {
     static var previews: some View {
         RecipeListView()
