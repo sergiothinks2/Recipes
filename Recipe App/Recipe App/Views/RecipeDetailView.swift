@@ -9,8 +9,21 @@ import SwiftUI
 import UIKit
 import WebKit
 
+/// A view that displays detailed information about a recipe.
+///
+/// This view provides:
+/// - Recipe title
+/// - Web content from the recipe's source URL (if available)
+/// - YouTube video link (if available)
+/// - Fallback content for unavailable recipes
+///
+/// The view handles different states of content availability and loading states
+/// for the web content.
 struct RecipeDetailView: View {
+    /// The recipe to display details for
     let recipe: Recipe
+
+    /// Tracks the loading state of the web content
     @State private var isLoading = true
 
     var body: some View {
@@ -98,15 +111,29 @@ struct RecipeDetailView: View {
     }
 }
 
-// WebView using UIKit's WKWebView
+/// A SwiftUI wrapper around WKWebView for displaying web content.
+///
+/// This view provides a bridge between UIKit's WKWebView and SwiftUI,
+/// handling web content loading and state management through a coordinator pattern.
+///
+/// Example usage:
+/// ```swift
+/// WebView(url: recipeURL, isLoading: $isLoading)
+///     .frame(height: 600)
+/// ```
 struct WebView: UIViewRepresentable {
+    /// The URL of the web content to load
     let url: URL
+
+    /// Binding to track the loading state of the web content
     @Binding var isLoading: Bool
 
+    /// Creates the coordinator to handle the web view's navigation delegate callbacks
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
+    /// Creates and configures the WKWebView instance
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.navigationDelegate = context.coordinator
@@ -114,20 +141,28 @@ struct WebView: UIViewRepresentable {
         return webView
     }
 
+    /// Required by UIViewRepresentable but not used in this implementation
     func updateUIView(_ webView: WKWebView, context: Context) {}
 
+    /// Coordinator class that handles WKWebView navigation delegate callbacks
+    ///
+    /// This class manages the communication between the WKWebView and our SwiftUI view,
+    /// primarily handling loading state updates.
     class Coordinator: NSObject, WKNavigationDelegate {
+        /// Reference to the parent WebView
         var parent: WebView
 
         init(_ parent: WebView) {
             self.parent = parent
         }
 
+        /// Called when the web content finishes loading successfully
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
         {
             parent.isLoading = false
         }
 
+        /// Called when the web content fails to load
         func webView(
             _ webView: WKWebView, didFail navigation: WKNavigation!,
             withError error: Error
