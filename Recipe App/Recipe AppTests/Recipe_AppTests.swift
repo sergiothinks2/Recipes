@@ -9,10 +9,27 @@ import XCTest
 
 @testable import Recipe_App
 
+/// Test suite for RecipeListViewModel focusing on recipe fetching functionality.
+///
+/// These tests verify:
+/// - Successful recipe fetching
+/// - Empty data handling
+/// - Error handling for malformed data
+/// - Network error handling
+///
+/// The tests use a mock network service to simulate different scenarios
+/// and verify the view model's state management.
 final class RecipeListViewModelTests: XCTestCase {
+    /// The view model instance being tested
     var viewModel: RecipeListViewModel!
+
+    /// Mock network service for controlling test scenarios
     var mockNetworkService: MockNetworkService!
 
+    /// Sets up the test environment before each test.
+    ///
+    /// Creates new instances of the mock network service and view model
+    /// to ensure a clean state for each test.
     override func setUp() async throws {
         try await super.setUp()
         mockNetworkService = MockNetworkService()
@@ -21,6 +38,10 @@ final class RecipeListViewModelTests: XCTestCase {
         }
     }
 
+    /// Cleans up after each test.
+    ///
+    /// Releases references to the view model and mock service
+    /// to prevent state leakage between tests.
     override func tearDown() async throws {
         try await super.tearDown()
         await MainActor.run {
@@ -29,6 +50,12 @@ final class RecipeListViewModelTests: XCTestCase {
         mockNetworkService = nil
     }
 
+    /// Tests successful recipe fetching scenario.
+    ///
+    /// Verifies that:
+    /// - Loading state is properly managed
+    /// - No errors are present
+    /// - Recipe data is correctly populated
     @MainActor
     func testFetchRecipesSuccess() async throws {
         // Given
@@ -51,6 +78,12 @@ final class RecipeListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.recipes.first?.id, expectedRecipes.first?.id)
     }
 
+    /// Tests handling of empty recipe data.
+    ///
+    /// Verifies that:
+    /// - Empty state is properly handled
+    /// - No errors are present
+    /// - Recipes array is empty
     @MainActor
     func testFetchRecipesEmptyData() async throws {
         // Given
@@ -66,6 +99,12 @@ final class RecipeListViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.recipes.isEmpty)
     }
 
+    /// Tests handling of malformed data response.
+    ///
+    /// Verifies that:
+    /// - Decoding error is properly captured
+    /// - Error state is correctly set
+    /// - Recipes array is cleared
     @MainActor
     func testFetchRecipesMalformedData() async throws {
         // Given
@@ -86,6 +125,12 @@ final class RecipeListViewModelTests: XCTestCase {
         }
     }
 
+    /// Tests handling of network errors.
+    ///
+    /// Verifies that:
+    /// - Network errors are properly captured
+    /// - Error state is correctly set
+    /// - Recipes array is cleared
     @MainActor
     func testFetchRecipesNetworkError() async throws {
         // Given
@@ -107,18 +152,37 @@ final class RecipeListViewModelTests: XCTestCase {
     }
 }
 
-// Enhanced Mock Network Service
+// MARK: - Mock Network Service
+/// A mock implementation of NetworkServiceProtocol for testing purposes.
+///
+/// This mock service allows tests to:
+/// - Control the response data
+/// - Simulate different network scenarios
+/// - Verify error handling
 class MockNetworkService: NetworkServiceProtocol {
+    /// Defines different test scenarios for the mock service
     enum Scenario {
+        /// Returns successful response with mock recipes
         case success
+        /// Returns empty recipe array
         case empty
+        /// Simulates malformed data error
         case malformed
+        /// Simulates network connection error
         case networkError
     }
 
+    /// The mock recipes to return in success scenario
     var mockRecipes: [Recipe] = []
+
+    /// The current test scenario
     var scenario: Scenario = .success
 
+    /// Creates a new mock network service.
+    ///
+    /// - Parameters:
+    ///   - mockRecipes: The recipes to return in success scenario
+    ///   - scenario: The test scenario to simulate
     init(
         mockRecipes: [Recipe] = Recipe.sampleRecipes,
         scenario: Scenario = .success
@@ -127,6 +191,10 @@ class MockNetworkService: NetworkServiceProtocol {
         self.scenario = scenario
     }
 
+    /// Simulates fetching recipes based on the current scenario.
+    ///
+    /// - Returns: Mock recipe data in success scenario
+    /// - Throws: Appropriate NetworkError based on the scenario
     func fetchRecipes() async throws -> [Recipe] {
         switch scenario {
         case .success:
